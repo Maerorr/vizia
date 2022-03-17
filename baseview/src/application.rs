@@ -318,23 +318,31 @@ impl ApplicationRunner {
 
         match event {
             baseview::Event::Mouse(event) => match event {
-                baseview::MouseEvent::CursorMoved { position } => {
+                baseview::MouseEvent::CursorMoved { position, modifiers } => {
+                    self.update_modifiers(modifiers);
+
                     let physical_posx = position.x * self.context.style.dpi_factor;
                     let physical_posy = position.y * self.context.style.dpi_factor;
                     let cursorx = (physical_posx) as f32;
                     let cursory = (physical_posy) as f32;
                     self.context.dispatch_system_event(WindowEvent::MouseMove(cursorx, cursory));
                 }
-                baseview::MouseEvent::ButtonPressed(button) => {
+                baseview::MouseEvent::ButtonPressed { button, modifiers } => {
+                    self.update_modifiers(modifiers);
+
                     let b = translate_mouse_button(button);
                     self.context.dispatch_system_event(WindowEvent::MouseDown(b));
                 }
-                baseview::MouseEvent::ButtonReleased(button) => {
+                baseview::MouseEvent::ButtonReleased { button, modifiers } => {
+                    self.update_modifiers(modifiers);
+
                     let b = translate_mouse_button(button);
                     self.context.dispatch_system_event(WindowEvent::MouseUp(b));
                 }
-                baseview::MouseEvent::WheelScrolled(scroll_delta) => {
-                    let (lines_x, lines_y) = match scroll_delta {
+                baseview::MouseEvent::WheelScrolled { delta, modifiers } => {
+                    self.update_modifiers(modifiers);
+
+                    let (lines_x, lines_y) = match delta {
                         baseview::ScrollDelta::Lines { x, y } => (x, y),
                         baseview::ScrollDelta::Pixels { x, y } => (
                             if x < 0.0 {
@@ -475,6 +483,21 @@ impl ApplicationRunner {
             self.context.current = Entity::root();
             (idle_callback)(&mut self.context);
         }
+    }
+
+    fn update_modifiers(&mut self, modifiers: keyboard_types::Modifiers) {
+        self.context
+            .modifiers
+            .set(Modifiers::SHIFT, modifiers.contains(keyboard_types::Modifiers::SHIFT));
+        self.context
+            .modifiers
+            .set(Modifiers::CTRL, modifiers.contains(keyboard_types::Modifiers::CONTROL));
+        self.context
+            .modifiers
+            .set(Modifiers::LOGO, modifiers.contains(keyboard_types::Modifiers::META));
+        self.context
+            .modifiers
+            .set(Modifiers::ALT, modifiers.contains(keyboard_types::Modifiers::ALT));
     }
 }
 
