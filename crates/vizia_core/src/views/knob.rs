@@ -336,6 +336,7 @@ pub struct TickKnob {
     tick_len: Units,
     normalized_value: f32,
     mode: KnobMode,
+    background_color: (u8, u8, u8),
 }
 
 impl TickKnob {
@@ -347,6 +348,7 @@ impl TickKnob {
         arc_len: f32,
         // steps: u32,
         mode: KnobMode,
+        background_color: (u8, u8, u8),
     ) -> Handle<Self> {
         Self {
             // angle_start: -150.0,
@@ -358,6 +360,7 @@ impl TickKnob {
             tick_len,
             normalized_value: 0.5,
             mode,
+            background_color,
         }
         .build(cx, |_| {})
     }
@@ -377,7 +380,11 @@ impl View for TickKnob {
             cx.background_color().cloned().unwrap_or_default().into();
         foreground_color.set_alphaf(foreground_color.a * opacity);
 
-        let background_color = femtovg::Color::rgb(54, 54, 54);
+        let background_color = femtovg::Color::rgb(
+            self.background_color.0,
+            self.background_color.1,
+            self.background_color.2,
+        );
         //et mut foreground_color = femtovg::Color::rgb(50, 50, 200);
 
         let bounds = cx.bounds();
